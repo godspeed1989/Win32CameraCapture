@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CameraCapture", "CameraCapture\CameraCapture.vcxproj", "{589A87E1-EA93-4EEB-837B-09A9692D84EE}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Demo", "Demo\Demo.vcxproj", "{93F8837C-E1D4-47FE-B726-2431011629BE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{589A87E1-EA93-4EEB-837B-09A9692D84EE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{589A87E1-EA93-4EEB-837B-09A9692D84EE}.Debug|Win32.Build.0 = Debug|Win32
+		{589A87E1-EA93-4EEB-837B-09A9692D84EE}.Release|Win32.ActiveCfg = Release|Win32
+		{589A87E1-EA93-4EEB-837B-09A9692D84EE}.Release|Win32.Build.0 = Release|Win32
+		{93F8837C-E1D4-47FE-B726-2431011629BE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{93F8837C-E1D4-47FE-B726-2431011629BE}.Debug|Win32.Build.0 = Debug|Win32
+		{93F8837C-E1D4-47FE-B726-2431011629BE}.Release|Win32.ActiveCfg = Release|Win32
+		{93F8837C-E1D4-47FE-B726-2431011629BE}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
