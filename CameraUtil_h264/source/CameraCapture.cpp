@@ -1,29 +1,29 @@
 #include "CameraCapture.h"
 #include "CaptureVideo.h"
 
-CaptureVideo *capvid;
+CaptureVideo *capvid[MAX_CAMERA_INDEX];
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // 说明：初始化摄像驱动
-// 参数：无
+// 参数：idx，设备编号
 // 返回：无
-void cm_init()
+void cm_init(UINT idx)
 {
-	capvid = new CaptureVideo();
+	capvid[idx] = new CaptureVideo();
 }
 
 // 说明：清理摄像驱动
-// 参数：无
+// 参数：idx，设备编号
 // 返回：无
-void cm_exit()
+void cm_exit(UINT idx)
 {
 	if (capvid)
 	{
-		capvid = new CaptureVideo();
-		capvid = 0;
+		delete capvid[idx];
+		capvid[idx] = 0;
 	}
 }
 
@@ -33,25 +33,19 @@ void cm_exit()
 UINT cm_print_driver_list()
 {
 	// 枚举设备
-	int i;
-	HRESULT r = capvid->EnumAllDevices();
-	for (i = 0; i < capvid->m_nCaptureDeviceNumber; i++)
-	{
-		wprintf(L"[%d] %s\n", i, capvid->m_pCapDeviceName[i]);
-	}
-	return UINT(i);
+	return CaptureVideo::EnumAllDevices();
 }
 
 // 说明：打开摄像设备
-// 参数：设备编号
+// 参数：idx，设备编号
 // 返回：TRUE，打开成功；FALSE，打开失败
 BOOL cm_open(UINT idx)
 {
-	capvid->OpenDevice(idx);
-	if (capvid->m_bConnected == TRUE)
+	capvid[idx]->OpenDevice(idx);
+	if (capvid[idx]->m_bConnected == TRUE)
 	{
 		// 开启摄像头
-		capvid->StartCapture();
+		capvid[idx]->StartCapture();
 		return TRUE;
 	}
 	return FALSE;
@@ -62,13 +56,13 @@ BOOL cm_open(UINT idx)
 // 返回：无
 void cm_close(UINT idx)
 {
-	if (capvid->m_bConnected == TRUE)
+	if (capvid[idx]->m_bConnected == TRUE)
 	{	
 		// 关闭摄像头
-		capvid->StopCapture();
+		capvid[idx]->StopCapture();
 	}
 	// 关闭设备[0]
-	capvid->CloseDevice();
+	capvid[idx]->CloseDevice();
 }
 
 // 说明：从摄像设备截取一张图片到BMP文件
@@ -76,7 +70,7 @@ void cm_close(UINT idx)
 // 返回：TRUE，截取成功；FALSE，截取失败
 BOOL cm_grab_to_bmp(UINT idx, WCHAR *file)
 {
-	capvid->GrabOneFrame(file);
+	capvid[idx]->GrabOneFrame(file);
 	return TRUE;
 }
 
@@ -85,7 +79,7 @@ BOOL cm_grab_to_bmp(UINT idx, WCHAR *file)
 // 返回：TRUE，开始录制；FALSE，录制失败
 BOOL cm_start_record(UINT idx, const char *file)
 {
-	capvid->StartGrabVideo(file);
+	capvid[idx]->StartGrabVideo(file);
 	return 0;
 }
 
@@ -94,7 +88,7 @@ BOOL cm_start_record(UINT idx, const char *file)
 // 返回：无
 void cm_stop_record(UINT idx)
 {
-	capvid->StopGrabVideo();
+	capvid[idx]->StopGrabVideo();
 }
 
 // 说明：获得摄像设备参数
@@ -102,10 +96,10 @@ void cm_stop_record(UINT idx)
 // 返回：无
 BOOL cm_get_param(UINT idx, int *width, int *height)
 {
-	if (capvid->m_bConnected == TRUE)
+	if (capvid[idx]->m_bConnected == TRUE)
 	{
-		*width = (int)capvid->m_lWidth;
-		*height = (int)capvid->m_lHeight;
+		*width = (int)capvid[idx]->m_lWidth;
+		*height = (int)capvid[idx]->m_lHeight;
 	}
 	return FALSE;
 }

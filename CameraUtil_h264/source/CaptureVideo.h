@@ -9,7 +9,49 @@ public:
 	CaptureVideo();
 	~CaptureVideo();
 	// 枚举所有视频设备
-	HRESULT EnumAllDevices();
+	static UINT EnumAllDevices()
+	{
+		int nCaptureDeviceNumber = 0; //Device Count
+		TCHAR pCapDeviceName[10][MAX_PATH]; //the Device name
+		ICreateDevEnum *pDevEnum;
+		IEnumMoniker   *pEnumMon;
+		IMoniker	   *pMoniker;
+		HRESULT hr = CoCreateInstance(CLSID_SystemDeviceEnum,NULL,CLSCTX_INPROC_SERVER,
+										IID_ICreateDevEnum,(LPVOID*)&pDevEnum);
+		if (SUCCEEDED(hr))
+		{
+			hr = pDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,&pEnumMon, 0);
+			if (hr == S_FALSE)
+			{
+				hr = VFW_E_NOT_FOUND;
+				return 0;
+			}
+			pEnumMon->Reset();
+			ULONG cFetched;
+			while(hr=pEnumMon->Next(1,&pMoniker,&cFetched),hr == S_OK)
+			{
+				IPropertyBag *pProBag;
+				hr = pMoniker->BindToStorage(0,0,IID_IPropertyBag,(LPVOID*)&pProBag);
+				if (SUCCEEDED(hr))
+				{
+					VARIANT varTemp;
+					varTemp.vt = VT_BSTR;
+					hr = pProBag->Read(L"FriendlyName",&varTemp,NULL);
+					if (SUCCEEDED(hr))
+					{
+						StringCchCopy(pCapDeviceName[nCaptureDeviceNumber],MAX_PATH,varTemp.bstrVal);
+						wprintf(L"[%d] %s\n", nCaptureDeviceNumber, pCapDeviceName[nCaptureDeviceNumber]);
+						nCaptureDeviceNumber++;
+						SysFreeString(varTemp.bstrVal);
+					}
+					pProBag->Release();
+				}
+				pMoniker->Release();
+			}
+			pEnumMon->Release();
+		}
+		return nCaptureDeviceNumber;
+	}
 	// 打开、关闭设备
 	HRESULT OpenDevice(int deviceID);
 	void CloseDevice();
@@ -22,11 +64,10 @@ public:
 	void StartGrabVideo(const char *pFileName);
 	void StopGrabVideo();
 public:
-	int m_nCaptureDeviceNumber;           //Device Count
-	TCHAR m_pCapDeviceName[10][MAX_PATH]; //the Device name
 	BOOL m_bConnected;
 	LONG m_lWidth, m_lHeight;
 private:
+	SampleGrabberCallback m_sampleGrabberCB;
 	HRESULT InitializeEnv();
 	HRESULT BindFilter(int deviceID, IBaseFilter **pBaseFilter);
 	void CloseInterface();

@@ -122,7 +122,7 @@ void SampleGrabberCallback::save264_yuv444_init(int w, int h, int bitcnt, const 
 	x264_pPic_in = (x264_picture_t*)malloc(sizeof(x264_picture_t));
 	x264_pPic_out = (x264_picture_t*)malloc(sizeof(x264_picture_t));
 	x264_pParam = (x264_param_t*)malloc(sizeof(x264_param_t));
-
+#if 0
 	x264_param_default(x264_pParam);
 	x264_pParam->i_width  = w; 
 	x264_pParam->i_height = h;
@@ -132,7 +132,11 @@ void SampleGrabberCallback::save264_yuv444_init(int w, int h, int bitcnt, const 
 	x264_pParam->i_sync_lookahead = 1;
 	x264_pParam->i_bframe = 0;
 	x264_pParam->b_vfr_input = 0;
-	
+#else
+	x264_param_default_preset(x264_pParam, "ultrafast", "zerolatency");
+	x264_pParam->i_width  = w; 
+	x264_pParam->i_height = h;
+#endif
 	if (bitcnt == 32)
 		x264_pParam->i_csp = X264_CSP_BGRA;
 	else if (bitcnt == 24)
@@ -150,14 +154,21 @@ void SampleGrabberCallback::save264_yuv444_init(int w, int h, int bitcnt, const 
 
 void SampleGrabberCallback::save264_yuv444_encode(BYTE *pBuffer)
 {
-	int len, ret;
+	int i, len, ret, bpp;
 	WaitForSingleObject(x264_hMutex_encoding, INFINITE);
 	
 	if (x264_pParam->i_csp == X264_CSP_BGRA)
-		len = 4 * x264_pParam->i_width * x264_pParam->i_height;
+		bpp = 4;
 	else if (x264_pParam->i_csp == X264_CSP_BGR)
-		len = 3 * x264_pParam->i_width * x264_pParam->i_height;
-	memcpy(x264_pPic_in->img.plane[0], pBuffer, len);
+		bpp = 3;
+	len = bpp * x264_pParam->i_width * x264_pParam->i_height;
+	i = 0;
+	do
+	{
+		i += bpp;
+		len -= bpp;
+		memcpy(x264_pPic_in->img.plane[0]+i, pBuffer+len, 4);
+	} while(len);
 
 	// encode frame
 	x264_pPic_in->i_pts = x264_i++;

@@ -2,19 +2,11 @@
 
 #include <stdio.h>
 
-int main()
+void run(UINT cm_idx)
 {
-	UINT cm_idx, cm_cnt;
 	int width, height;
-
 	// 初始化摄像驱动
-	cm_init();
-
-	// 打印摄像设备列表
-	cm_cnt = cm_print_driver_list();
-	// 测试使用0号
-	cm_idx = 0;
-
+	cm_init(cm_idx);
 	// 打开摄像设备
 	cm_open(cm_idx);
 
@@ -38,9 +30,18 @@ int main()
 
 	// 关闭摄像设备
 	cm_close(cm_idx);
-
 	// 清理摄像驱动
-	cm_exit();
+	cm_exit(cm_idx);
+}
+
+int main()
+{
+	UINT cm_idx, cm_cnt;
+
+	// 打印摄像设备列表
+	cm_cnt = cm_print_driver_list();
+	run(0);
+	run(1);
 
 	system("pause");
 	return 0;

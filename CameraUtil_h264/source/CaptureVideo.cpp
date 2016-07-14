@@ -1,7 +1,5 @@
 #include "CaptureVideo.h"
 
-SampleGrabberCallback g_sampleGrabberCB;
-
 CaptureVideo::CaptureVideo()
 {
 	//COM Library Initialize
@@ -10,7 +8,6 @@ CaptureVideo::CaptureVideo()
 		return;
 	}
 	//initialize member variable
-	m_nCaptureDeviceNumber = 0;
 	m_pDevFilter = NULL;
 	m_pCaptureGB = NULL;
 	m_pGraphBuilder = NULL;
@@ -26,47 +23,6 @@ CaptureVideo::~CaptureVideo()
 {
 	CloseInterface();
 	CoUninitialize();
-}
-
-HRESULT CaptureVideo::EnumAllDevices()
-{
-	ICreateDevEnum *pDevEnum;
-	IEnumMoniker   *pEnumMon;
-	IMoniker	   *pMoniker;
-	HRESULT hr = CoCreateInstance(CLSID_SystemDeviceEnum,NULL,CLSCTX_INPROC_SERVER,
-			IID_ICreateDevEnum,(LPVOID*)&pDevEnum);
-	if (SUCCEEDED(hr))
-	{
-		hr = pDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,&pEnumMon, 0);
-		if (hr == S_FALSE)
-		{
-			hr = VFW_E_NOT_FOUND;
-			return hr;
-		}
-		pEnumMon->Reset();
-		ULONG cFetched;
-		while(hr=pEnumMon->Next(1,&pMoniker,&cFetched),hr == S_OK)
-		{
-			IPropertyBag *pProBag;
-			hr = pMoniker->BindToStorage(0,0,IID_IPropertyBag,(LPVOID*)&pProBag);
-			if (SUCCEEDED(hr))
-			{
-				VARIANT varTemp;
-				varTemp.vt = VT_BSTR;
-				hr = pProBag->Read(L"FriendlyName",&varTemp,NULL);
-				if (SUCCEEDED(hr))
-				{
-					StringCchCopy(m_pCapDeviceName[m_nCaptureDeviceNumber],MAX_PATH,varTemp.bstrVal);
-					m_nCaptureDeviceNumber++;
-					SysFreeString(varTemp.bstrVal);
-				}
-				pProBag->Release();
-			}
-			pMoniker->Release();
-		}
-		pEnumMon->Release();
-	}
-	return hr;
 }
 
 HRESULT CaptureVideo::InitializeEnv()
@@ -207,7 +163,7 @@ HRESULT CaptureVideo::OpenDevice(int deviceID)
 	// find the current bit depth
 	HDC hdc=GetDC(NULL);
 	int iBitDepth=GetDeviceCaps(hdc, BITSPIXEL);
-	g_sampleGrabberCB.m_iBitCount = iBitDepth;
+	m_sampleGrabberCB.m_iBitCount = iBitDepth;
 	ReleaseDC(NULL,hdc);
 
 	// set the media type for grabber filter
@@ -247,8 +203,8 @@ HRESULT CaptureVideo::OpenDevice(int deviceID)
 	VIDEOINFOHEADER * vih = (VIDEOINFOHEADER*) mediaType.pbFormat;
 	m_lWidth = vih->bmiHeader.biWidth;
 	m_lHeight = vih->bmiHeader.biHeight;
-	g_sampleGrabberCB.m_lWidth = vih->bmiHeader.biWidth;
-	g_sampleGrabberCB.m_lHeight = vih->bmiHeader.biHeight;
+	m_sampleGrabberCB.m_lWidth = vih->bmiHeader.biWidth;
+	m_sampleGrabberCB.m_lHeight = vih->bmiHeader.biHeight;
 	
 	// configure grabber filter
 	hr = m_pSampGrabber->SetOneShot(FALSE);
@@ -259,7 +215,7 @@ HRESULT CaptureVideo::OpenDevice(int deviceID)
 		return hr;
 
 	// Use the BufferCB callback method
-	hr = m_pSampGrabber->SetCallback(&g_sampleGrabberCB, 1);
+	hr = m_pSampGrabber->SetCallback(&m_sampleGrabberCB, 1);
 
 	// release resource
 	if (mediaType.cbFormat != 0)
@@ -313,19 +269,19 @@ void CaptureVideo::GrabOneFrame(const WCHAR *pFileName)
 {
 	if (m_bConnected == FALSE)
 		return;
-	g_sampleGrabberCB.GrabBMP(pFileName);
+	m_sampleGrabberCB.GrabBMP(pFileName);
 }
 
 void CaptureVideo::StartGrabVideo(const char *pFileName)
 {
 	if (m_bConnected == FALSE)
 		return;
-	g_sampleGrabberCB.StartGrabVideo(pFileName);
+	m_sampleGrabberCB.StartGrabVideo(pFileName);
 }
 
 void CaptureVideo::StopGrabVideo()
 {
 	if (m_bConnected == FALSE)
 		return;
-	g_sampleGrabberCB.StopGrabVideo();
+	m_sampleGrabberCB.StopGrabVideo();
 }

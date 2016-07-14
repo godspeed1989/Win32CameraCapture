@@ -15,14 +15,14 @@ extern "C" {
 #define MAX_CAMERA_INDEX 10
 
 // 说明：初始化摄像驱动
-// 参数：无
+// 参数：idx，设备编号
 // 返回：无
-DLLEXPORT void cm_init();
+DLLEXPORT void cm_init(UINT idx);
 
 // 说明：清理摄像驱动
-// 参数：无
+// 参数：idx，设备编号
 // 返回：无
-DLLEXPORT void cm_exit();
+DLLEXPORT void cm_exit(UINT idx);
 
 // 说明：打印摄像驱动列表
 // 参数：无
@@ -30,7 +30,7 @@ DLLEXPORT void cm_exit();
 DLLEXPORT UINT cm_print_driver_list();
 
 // 说明：打开摄像设备
-// 参数：设备编号
+// 参数：idx，设备编号
 // 返回：TRUE，打开成功；FALSE，打开失败
 DLLEXPORT BOOL cm_open(UINT idx);
 
